@@ -28,7 +28,6 @@
 #include "start_menu.h"
 #include "trainer_see.h"
 #include "trainer_hill.h"
-#include "vs_seeker.h"
 #include "wild_encounter.h"
 #include "follow_me.h"
 #include "constants/event_bg.h"
@@ -43,15 +42,15 @@
 #include "rogue_ridemon.h"
 
 static EWRAM_DATA u8 sWildEncounterImmunitySteps = 0;
-static EWRAM_DATA u16 sPrevMetatileBehavior = 0;
+static EWRAM_DATA u16 sPreviousPlayerMetatileBehavior = 0;
 
 u8 gSelectedObjectEvent;
 
 static void GetPlayerPosition(struct MapPosition *);
 static void GetInFrontOfPlayerPosition(struct MapPosition *);
 static u16 GetPlayerCurMetatileBehavior(int);
-static bool8 TryStartInteractionScript(struct MapPosition *, u16, u8);
-static const u8 *GetInteractionScript(struct MapPosition *, u8, u8);
+static bool8 TryStartInteractionScript(struct MapPosition*, u16, u8);
+static const u8 *GetInteractionScript(struct MapPosition*, u8, u8);
 static const u8 *GetInteractedObjectEventScript(struct MapPosition *, u8, u8);
 static const u8 *GetInteractedBackgroundEventScript(struct MapPosition *, u8, u8);
 static const u8 *GetInteractedMetatileScript(struct MapPosition *, u8, u8);
@@ -74,9 +73,9 @@ static bool8 TryStartWarpEventScript(struct MapPosition *, u16);
 static bool8 TryStartMiscWalkingScripts(u16);
 static bool8 TryStartStepCountScript(u16);
 static void UpdateFriendshipStepCounter(void);
-#if OW_POISON_DAMAGE < GEN_5
+#if 0 // RogueNote: overworld poison damage
 static bool8 UpdatePoisonStepCounter(void);
-#endif // OW_POISON_DAMAGE
+#endif
 
 void FieldClearPlayerInput(struct FieldInput *input)
 {
@@ -383,10 +382,6 @@ static const u8 *GetInteractedObjectEventScript(struct MapPosition *position, u8
             return NULL;
     }
 
-    // Cannot interact with invisible object events
-    if(gObjectEvents[objectEventId].invisible)
-        return NULL;
-
     gSelectedObjectEvent = objectEventId;
     gSpecialVar_LastTalked = gObjectEvents[objectEventId].localId;
     gSpecialVar_Facing = direction;
@@ -625,7 +620,7 @@ static bool8 TryStartStepCountScript(u16 metatileBehavior)
 
     if (!(gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_FORCED_MOVE) && !MetatileBehavior_IsForcedMovementTile(metatileBehavior))
     {
-    #if OW_POISON_DAMAGE < GEN_5
+    #if 0 // RogueNote: overworld poison damage
         if (UpdatePoisonStepCounter() == TRUE)
         {
             ScriptContext_SetupScript(EventScript_FieldPoison);
@@ -638,11 +633,6 @@ static bool8 TryStartStepCountScript(u16 metatileBehavior)
             ScriptContext_SetupScript(EventScript_EggHatch);
             return TRUE;
         }
-        if (UpdateVsSeekerStepCounter())
-        {
-            ScriptContext_SetupScript(EventScript_VsSeekerChargingDone);
-            return TRUE;
-        }
     }
 
     if (SafariZoneTakeStep() == TRUE)
@@ -653,7 +643,8 @@ static bool8 TryStartStepCountScript(u16 metatileBehavior)
     return FALSE;
 }
 
-static void UNUSED ClearFriendshipStepCounter(void)
+// Unused
+static void ClearFriendshipStepCounter(void)
 {
     VarSet(VAR_FRIENDSHIP_STEP_COUNTER, 0);
 }
@@ -681,7 +672,7 @@ void ClearPoisonStepCounter(void)
     VarSet(VAR_POISON_STEP_COUNTER, 0);
 }
 
-#if OW_POISON_DAMAGE < GEN_5
+#if 0 // RogueNote: overworld poison damage
 static bool8 UpdatePoisonStepCounter(void)
 {
     u16 *ptr;
@@ -706,7 +697,7 @@ static bool8 UpdatePoisonStepCounter(void)
     }
     return FALSE;
 }
-#endif // OW_POISON_DAMAGE
+#endif
 
 void RestartWildEncounterImmunitySteps(void)
 {
@@ -722,18 +713,18 @@ static bool8 CheckStandardWildEncounter(u16 metatileBehavior)
     if (sWildEncounterImmunitySteps < 4)
     {
         sWildEncounterImmunitySteps++;
-        sPrevMetatileBehavior = metatileBehavior;
+        sPreviousPlayerMetatileBehavior = metatileBehavior;
         return FALSE;
     }
 
-    if (StandardWildEncounter(metatileBehavior, sPrevMetatileBehavior) == TRUE)
+    if (StandardWildEncounter(metatileBehavior, sPreviousPlayerMetatileBehavior) == TRUE)
     {
         sWildEncounterImmunitySteps = 0;
-        sPrevMetatileBehavior = metatileBehavior;
+        sPreviousPlayerMetatileBehavior = metatileBehavior;
         return TRUE;
     }
 
-    sPrevMetatileBehavior = metatileBehavior;
+    sPreviousPlayerMetatileBehavior = metatileBehavior;
     return FALSE;
 }
 
@@ -940,7 +931,7 @@ static const u8 *TryRunCoordEventScript(const struct CoordEvent *coordEvent)
             DoCoordEventWeather(coordEvent->trigger);
             return NULL;
         }
-        if (coordEvent->trigger == TRIGGER_RUN_IMMEDIATELY)
+        if (coordEvent->trigger == 0)
         {
             RunScriptImmediately(coordEvent->script);
             return NULL;
