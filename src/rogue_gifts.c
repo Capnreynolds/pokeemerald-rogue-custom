@@ -51,7 +51,7 @@ static u8 const sRarityToCustomTrainerIndex[] =
 static u16 const sDynamicCustomMonAbilities[] = 
 {
 #ifdef ROGUE_EXPANSION
-    ABILITY_GOOD_AS_GOLD,
+    ABILITY_OWN_TEMPO,
     ABILITY_WATER_ABSORB,
     ABILITY_VOLT_ABSORB,
     ABILITY_FLASH_FIRE,
@@ -189,7 +189,7 @@ static u16 const sDynamicCustomMonMoves[] =
     MOVE_GUNK_SHOT,
     MOVE_NASTY_PLOT,
     MOVE_CLOSE_COMBAT,
-    MOVE_U_TURN,
+    MOVE_TACHYON_CUTTER,
     MOVE_DRAGON_DANCE,
     MOVE_CALM_MIND,
     MOVE_LIGHT_OF_RUIN,
@@ -423,7 +423,7 @@ static u16 SelectTypeBasedExtraMove(u8 type, u8 rng)
     case TYPE_GHOST:
         return rng ? MOVE_MOONGEIST_BEAM : MOVE_SPECTRAL_THIEF;
     case TYPE_STEEL:
-        return rng ? MOVE_GIGATON_HAMMER : MOVE_TACHYON_CUTTER;
+        return rng ? MOVE_GIGATON_HAMMER : MOVE_DOUBLE_IRON_BASH;
     case TYPE_FIRE:
         return rng ? MOVE_TORCH_SONG : MOVE_SACRED_FIRE;
     case TYPE_WATER:
